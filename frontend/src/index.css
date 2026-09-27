@@ -1,0 +1,165 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+/* ── Tailwind v4 theme tokens ── */
+@theme {
+  /* Brand colors (indigo/blue) */
+  --color-brand-50:  #f0f4ff;
+  --color-brand-100: #e0e9ff;
+  --color-brand-200: #c7d6ff;
+  --color-brand-300: #a4b8fd;
+  --color-brand-400: #7c91f9;
+  --color-brand-500: #5a67f2;
+  --color-brand-600: #4549e6;
+  --color-brand-700: #3a3bcb;
+  --color-brand-800: #3034a4;
+  --color-brand-900: #2d3282;
+  --color-brand-950: #1b1d4d;
+
+  /* Surface (dark) */
+  --color-surface:     #0f1117;
+  --color-surface-800: #1a1d2e;
+  --color-surface-900: #0f1117;
+
+  /* Fonts */
+  --font-sans: 'Inter', system-ui, sans-serif;
+
+  /* Background images */
+  --background-image-hero-glow: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(90,103,242,0.25) 0%, transparent 70%);
+}
+
+/* ── Base styles ── */
+@layer base {
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background-color: var(--color-surface-900);
+    color: #f3f4f6;
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--color-surface-800); }
+  ::-webkit-scrollbar-thumb { background: var(--color-brand-700); border-radius: 9999px; }
+}
+
+/* ── Reusable component classes ── */
+@layer components {
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    border-radius: 0.5rem;
+    background-color: var(--color-brand-600);
+    color: #fff;
+    font-weight: 500;
+    font-size: 0.875rem;
+    transition: background-color 0.15s;
+    cursor: pointer;
+    border: none;
+    text-decoration: none;
+  }
+  .btn-primary:hover { background-color: var(--color-brand-500); }
+  .btn-primary:active { background-color: var(--color-brand-700); }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    border-radius: 0.5rem;
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #e5e7eb;
+    font-weight: 500;
+    font-size: 0.875rem;
+    background: transparent;
+    transition: background-color 0.15s;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .btn-secondary:hover { background-color: rgba(255,255,255,0.05); }
+  .btn-secondary:disabled { opacity: 0.5; }
+
+  .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    color: #9ca3af;
+    font-weight: 500;
+    font-size: 0.875rem;
+    background: transparent;
+    border: none;
+    transition: color 0.15s, background-color 0.15s;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .btn-ghost:hover { color: #fff; background-color: rgba(255,255,255,0.05); }
+
+  .card {
+    background-color: var(--color-surface-800);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 0.75rem;
+  }
+
+  .card-hover {
+    background-color: var(--color-surface-800);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 0.75rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .card-hover:hover {
+    border-color: rgba(69,73,230,0.4);
+    box-shadow: 0 10px 25px rgba(29,29,77,0.3);
+  }
+
+  .input {
+    width: 100%;
+    padding: 0.625rem 0.875rem;
+    border-radius: 0.5rem;
+    background-color: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #f3f4f6;
+    font-size: 0.875rem;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    outline: none;
+  }
+  .input::placeholder { color: #6b7280; }
+  .input:focus {
+    border-color: var(--color-brand-500);
+    box-shadow: 0 0 0 1px var(--color-brand-500);
+  }
+  select.input { appearance: auto; }
+
+  .label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #d1d5db;
+    margin-bottom: 0.375rem;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.125rem 0.625rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+
+  .section-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  .text-muted { color: #9ca3af; }
+}
