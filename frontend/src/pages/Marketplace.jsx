@@ -51,20 +51,37 @@ export default function Marketplace() {
       </div>
       <div className="mb-7"><CategoryNav selected={categoryId} onSelect={setCategoryId} /></div>
       {isLoading && <div className="flex justify-center py-20"><LoadingSpinner size="lg" /></div>}
-      {isError && <div className="text-center py-20 text-gray-500">Failed to load tools. Please try again.</div>}
+      {isError && (
+        <div className="text-center py-20">
+          <p className="text-gray-400 text-lg font-medium">Could not load tools</p>
+          <p className="text-gray-600 text-sm mt-1">Check your connection and try again.</p>
+        </div>
+      )}
       {!isLoading && !isError && tools.length === 0 && (
         <div className="text-center py-20">
-          <p className="text-gray-400 text-lg font-medium">No tools found</p>
-          <p className="text-gray-600 text-sm mt-1">Try a different search or category.</p>
+          {deferredSearch || categoryId ? (
+            <>
+              <p className="text-gray-400 text-lg font-medium">No tools found</p>
+              <p className="text-gray-600 text-sm mt-1">Try a different search or category.</p>
+            </>
+          ) : (
+            <>
+              <p className="text-gray-400 text-lg font-medium">No published tools yet</p>
+              <p className="text-gray-600 text-sm mt-1">Be the first creator to publish a tool on ToolForge.</p>
+            </>
+          )}
         </div>
       )}
       {!isLoading && tools.length > 0 && (
-        <>
-          <p className="text-xs text-gray-600 mb-4">{data?.total ?? tools.length} tools</p>
+        <div className={isFetching ? 'opacity-60 transition-opacity' : 'transition-opacity'}>
+          <p className="text-xs text-gray-600 mb-4">
+            {data?.total ?? tools.length} tool{(data?.total ?? tools.length) !== 1 ? 's' : ''}
+            {isFetching && <span className="ml-2 text-gray-700">updating…</span>}
+          </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
             {tools.map(tool => <ToolCard key={tool.id} tool={tool} />)}
           </div>
-        </>
+        </div>
       )}
     </div>
   )

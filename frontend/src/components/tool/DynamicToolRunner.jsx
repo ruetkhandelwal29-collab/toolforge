@@ -34,25 +34,64 @@ export default function DynamicToolRunner({ tool, onClose }) {
         <form onSubmit={handleSubmit(d => runMutation.mutate(d))} className="space-y-3">
           {schema.map(field => (
             <div key={field.name}>
-              <label className="label">{field.label}{field.required && <span className="text-red-400 ml-0.5">*</span>}</label>
+              <label className="label">
+                {field.label}
+                {field.required && <span className="text-red-400 ml-0.5">*</span>}
+              </label>
               {field.type === 'textarea' ? (
-                <textarea {...register(field.name, { required: field.required ? `${field.label} is required` : false })} placeholder={field.placeholder} rows={4} className="input resize-none" />
+                <textarea
+                  {...register(field.name, { required: field.required ? `${field.label} is required` : false })}
+                  placeholder={field.placeholder}
+                  rows={4}
+                  className="input resize-none"
+                />
               ) : field.type === 'select' ? (
-                <select {...register(field.name, { required: field.required ? `${field.label} is required` : false })} defaultValue={field.default ?? ''} className="input">
-                  {!field.required && <option value="">Select...</option>}
+                <select
+                  {...register(field.name, { required: field.required ? `${field.label} is required` : false })}
+                  defaultValue={field.default ?? ''}
+                  className="input"
+                >
+                  {!field.required && <option value="">Select…</option>}
+                  {field.required && <option value="" disabled>Select {field.label}…</option>}
                   {field.options?.map(o => <option key={o} value={o}>{o}</option>)}
                 </select>
               ) : field.type === 'number' ? (
-                <input type="number" {...register(field.name, { required: field.required ? `${field.label} is required` : false, valueAsNumber: true })} placeholder={field.placeholder} defaultValue={field.default} className="input" />
+                <input
+                  type="number"
+                  {...register(field.name, {
+                    required: field.required ? `${field.label} is required` : false,
+                    valueAsNumber: true,
+                  })}
+                  placeholder={field.placeholder}
+                  defaultValue={field.default}
+                  className="input"
+                />
+              ) : field.type === 'boolean' ? (
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id={`field-${field.name}`}
+                    {...register(field.name)}
+                    className="w-4 h-4 accent-brand-500"
+                  />
+                  <label htmlFor={`field-${field.name}`} className="text-sm text-gray-400 cursor-pointer">
+                    {field.placeholder || `Enable ${field.label}`}
+                  </label>
+                </div>
               ) : (
-                <input type="text" {...register(field.name, { required: field.required ? `${field.label} is required` : false })} placeholder={field.placeholder} className="input" />
+                <input
+                  type="text"
+                  {...register(field.name, { required: field.required ? `${field.label} is required` : false })}
+                  placeholder={field.placeholder}
+                  className="input"
+                />
               )}
               {errors[field.name] && <p className="text-xs text-red-400 mt-1">{errors[field.name].message}</p>}
             </div>
           ))}
           {schema.length === 0 && <p className="text-xs text-gray-500">No configurable inputs. Click Run to execute.</p>}
           <button type="submit" className="btn-primary w-full" disabled={runMutation.isPending}>
-            {runMutation.isPending ? <><Loader2 size={16} className="animate-spin" /> Running…</> : 'Run'}
+            {runMutation.isPending ? <><Loader2 size={16} className="animate-spin" /> Running…</> : 'Run Tool'}
           </button>
         </form>
       ) : (

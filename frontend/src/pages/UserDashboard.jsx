@@ -1,13 +1,17 @@
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Heart, History, Link as LinkIcon } from 'lucide-react'
+import { Heart, History } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import apiClient from '../services/apiClient'
 import ToolCard from '../components/marketplace/ToolCard'
 import LoadingSpinner from '../components/common/LoadingSpinner'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import toast from 'react-hot-toast'
 
 export default function UserDashboard() {
-  const { profile } = useAuth()
+  const { profile, refreshProfile } = useAuth()
+  const navigate = useNavigate()
+  const [becomingCreator, setBecomingCreator] = useState(false)
 
   const { data: favData, isLoading: favLoading } = useQuery({
     queryKey: ['favorites'],
@@ -115,11 +119,25 @@ export default function UserDashboard() {
             {profile?.role === 'user' && (
               <div className="border-t border-white/8 mt-4 pt-4">
                 <p className="text-xs text-gray-500 mb-3">Want to publish your own AI tools?</p>
-                <Link to="/dashboard" className="btn-primary w-full text-xs py-2" onClick={() => {
-                  apiClient.post('/api/auth/become-creator').catch(() => {})
-                }}>
-                  Become a Creator
-                </Link>
+                <button
+                  disabled={becomingCreator}
+                  className="btn-primary w-full text-xs py-2"
+                  onClick={async () => {
+                    setBecomingCreator(true)
+                    try {
+                      await apiClient.post('/api/auth/become-creator')
+                      await refreshProfile()
+                      toast.success('You are now a creator!')
+                      navigate('/creator/dashboard')
+                    } catch {
+                      toast.error('Could not upgrade account. Try again.')
+                    } finally {
+                      setBecomingCreator(false)
+                    }
+                  }}
+                >
+                  {becomingCreator ? 'Upgrading…' : 'Become a Creator'}
+                </button>
               </div>
             )}
           </div>

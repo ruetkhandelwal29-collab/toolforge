@@ -8,6 +8,7 @@ import Badge from '../components/common/Badge'
 import LoadingSpinner from '../components/common/LoadingSpinner'
 import StarRating from '../components/common/StarRating'
 import DynamicToolRunner from '../components/tool/DynamicToolRunner'
+import ReviewList from '../components/reviews/ReviewList'
 import toast from 'react-hot-toast'
 
 function formatCount(n) {
@@ -94,13 +95,20 @@ export default function ToolDetail() {
             ))}
           </div>
 
-          {/* Reviews section (placeholder for Phase 6) */}
+          {/* Reviews section */}
           <div className="card p-5">
-            <h2 className="text-sm font-semibold text-gray-300 mb-3">Reviews</h2>
-            {tool.review_count === 0
-              ? <p className="text-sm text-gray-600">No reviews yet. Be the first to run and review this tool.</p>
-              : <p className="text-sm text-gray-500">Full reviews coming in Phase 6.</p>
-            }
+            <div className="flex items-center gap-3 mb-5">
+              <h2 className="text-sm font-semibold text-gray-300">Reviews</h2>
+              {tool.review_count > 0 && (
+                <div className="flex items-center gap-1.5">
+                  <StarRating rating={tool.avg_rating} size={13} />
+                  <span className="text-xs text-gray-400">
+                    {Number(tool.avg_rating || 0).toFixed(1)} · {tool.review_count} review{tool.review_count !== 1 ? 's' : ''}
+                  </span>
+                </div>
+              )}
+            </div>
+            <ReviewList toolId={tool.id} toolSlug={slug} />
           </div>
         </div>
 

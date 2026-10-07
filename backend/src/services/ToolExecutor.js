@@ -12,9 +12,17 @@ function renderPrompt(template, inputs) {
 function validateInputs(inputSchema, rawInputs) {
   const shape = {}
   for (const field of inputSchema) {
-    let validator = z.string()
-    if (field.type === 'number') validator = z.number()
-    if (field.type === 'boolean') validator = z.boolean()
+    let validator
+    if (field.type === 'number') {
+      validator = z.number()
+    } else if (field.type === 'boolean') {
+      validator = z.boolean()
+    } else if (field.type === 'select' && Array.isArray(field.options) && field.options.length > 0) {
+      // Enforce the creator's option list — rejects values not in the allowlist
+      validator = z.enum(field.options)
+    } else {
+      validator = z.string().min(0)
+    }
     if (!field.required) validator = validator.optional()
     shape[field.name] = validator
   }
