@@ -13,6 +13,7 @@ import favoriteRoutes from './routes/favorites.js'
 import userRoutes from './routes/users.js'
 import creatorRoutes from './routes/creators.js'
 import reviewRoutes from './routes/reviews.js'
+import creditRoutes from './routes/credits.js'
 import adminRoutes from './routes/admin.js'
 
 const app = express()
@@ -31,6 +32,7 @@ app.use('/api/categories', categoryRoutes)
 app.use('/api/tools',      toolRoutes)
 app.use('/api/execute',    executeRoutes)
 app.use('/api/favorites',  favoriteRoutes)
+app.use('/api/credits',    creditRoutes)
 app.use('/api/users',      userRoutes)
 app.use('/api/creators',   creatorRoutes)
 app.use('/api/reviews',    reviewRoutes)

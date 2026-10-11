@@ -12,7 +12,13 @@ router.post('/:toolId', requireAuth, executeLimiter, async (req, res, next) => {
     const { inputs = {} } = req.body
     if (!req.user?.id) return res.status(401).json({ error: 'Authentication required' })
     const result = await executor.execute(toolId, req.user.id, inputs)
-    res.json({ output: result.output, run_id: result.runId, tokens_used: result.tokensUsed })
+    res.json({
+      output: result.output,
+      run_id: result.runId,
+      tokens_used: result.tokensUsed,
+      credits_charged: result.creditsCharged,
+      remaining_credits: result.remainingCredits,
+    })
   } catch (err) { next(err) }
 })
 

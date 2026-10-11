@@ -37,7 +37,16 @@ const schema = z.object({
   model:            z.string().min(1),
   prompt_template:  z.string().min(10, 'Prompt template is required'),
   pricing_type:     z.enum(['free', 'paid', 'credits']),
+  credits_per_run:  z.coerce.number().min(0, 'Credits cannot be negative').default(0),
   input_fields:     z.array(inputFieldSchema).default([]),
+}).refine(data => {
+  if (data.pricing_type === 'credits' || data.pricing_type === 'paid') {
+    return Number(data.credits_per_run) >= 1
+  }
+  return true
+}, {
+  message: 'Paid/credit tools must charge at least 1 credit per run',
+  path: ['credits_per_run'],
 })
 
 export default function EditTool() {
@@ -59,14 +68,16 @@ export default function EditTool() {
   const { register, control, handleSubmit, reset, watch, formState: { errors, isDirty } } = useForm({
     resolver: zodResolver(schema),
     defaultValues: {
-      tool_type:    'text',
-      provider:     'gemini',
-      model:        'gemini-3.8-flash',
-      pricing_type: 'free',
-      input_fields: [],
+      tool_type:       'text',
+      provider:        'gemini',
+      model:           'gemini-3.8-flash',
+      pricing_type:    'free',
+      credits_per_run: 1,
+      input_fields:    [],
     },
   })
 
+  const pricingType = watch('pricing_type')
   const { fields, append, remove } = useFieldArray({ control, name: 'input_fields' })
 
   // Pre-populate form once tool data is loaded
@@ -83,6 +94,7 @@ export default function EditTool() {
       model:            tool.model,
       prompt_template:  tool.prompt_template,
       pricing_type:     tool.pricing_type,
+      credits_per_run:  tool.credits_per_run ?? 1,
       // Convert stored input_schema back to form's input_fields shape
       input_fields: existingSchema.map(f => ({
         name:        f.name,
@@ -389,18 +401,38 @@ export default function EditTool() {
         {/* ── Pricing ── */}
         <section className="card p-6 space-y-4">
           <h2 className="text-sm font-semibold text-gray-200 pb-3 border-b border-white/8">Pricing</h2>
-          <div>
-            <label className="label">Pricing Model</label>
-            <select {...register('pricing_type')} className="input">
-              <option value="free">Free — users run at no cost</option>
-              <option value="credits">Credits — deduct credits per run</option>
-              <option value="paid">Paid — charge USD per run</option>
-            </select>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="label">Pricing Model</label>
+              <select {...register('pricing_type')} className="input">
+                <option value="free">Free — users run at no cost</option>
+                <option value="credits">Credits — charge credits per run</option>
+                <option value="paid">Paid — charge credits/run (monetized)</option>
+              </select>
+            </div>
+            {pricingType !== 'free' && (
+              <div>
+                <label className="label">Credits per Run *</label>
+                <input
+                  type="number"
+                  min="1"
+                  step="1"
+                  {...register('credits_per_run')}
+                  placeholder="e.g. 2"
+                  className="input"
+                />
+                {errors.credits_per_run && (
+                  <p className="text-xs text-red-400 mt-1">{errors.credits_per_run.message}</p>
+                )}
+              </div>
+            )}
           </div>
           <div className="flex items-start gap-2 bg-brand-950/40 border border-brand-900/50 rounded-lg px-3 py-2.5">
             <Info size={13} className="text-brand-400 mt-0.5 shrink-0" />
             <p className="text-xs text-brand-300">
-              Paid and credit pricing requires monetization setup. Use <strong>Free</strong> to get your tool live first.
+              {pricingType === 'free'
+                ? 'Free tools are available to all users without consuming credits.'
+                : 'Users will be charged this credit amount per run. Credits are refunded automatically if execution fails.'}
             </p>
           </div>
         </section>

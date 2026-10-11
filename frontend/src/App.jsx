@@ -12,8 +12,10 @@ import CreateTool from './pages/CreateTool'
 import EditTool from './pages/EditTool'
 import UserDashboard from './pages/UserDashboard'
 import NotFound from './pages/NotFound'
+import AdminDashboard from './pages/AdminDashboard'
 import ProtectedRoute from './components/auth/ProtectedRoute'
 import CreatorRoute from './components/auth/CreatorRoute'
+import AdminRoute from './components/auth/AdminRoute'
 
 export default function App() {
   return (
@@ -34,6 +36,9 @@ export default function App() {
               <Route path="/creator/dashboard" element={<CreatorDashboard />} />
               <Route path="/creator/tools/new" element={<CreateTool />} />
               <Route path="/creator/tools/:id/edit" element={<EditTool />} />
+            </Route>
+            <Route element={<AdminRoute />}>
+              <Route path="/admin" element={<AdminDashboard />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

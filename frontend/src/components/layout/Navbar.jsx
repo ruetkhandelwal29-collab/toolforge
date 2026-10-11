@@ -1,11 +1,11 @@
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
-import { Zap, Menu, X, LayoutDashboard, LogOut, User, ChevronDown } from 'lucide-react'
+import { Zap, Menu, X, LayoutDashboard, LogOut, User, ChevronDown, ShieldAlert } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
 import { clsx } from 'clsx'
 
 export default function Navbar() {
-  const { isAuthenticated, isCreator, profile, signOut, loading } = useAuth()
+  const { isAuthenticated, isCreator, isAdmin, profile, signOut, loading } = useAuth()
   const navigate = useNavigate()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [dropdownOpen, setDropdownOpen] = useState(false)
@@ -62,6 +62,11 @@ export default function Navbar() {
                         <LayoutDashboard size={15} /> Creator Studio
                       </Link>
                     )}
+                    {isAdmin && (
+                      <Link to="/admin" className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-purple-400 hover:bg-purple-900/20 hover:text-purple-300" onClick={() => setDropdownOpen(false)}>
+                        <ShieldAlert size={15} /> Admin Studio
+                      </Link>
+                    )}
                     <div className="border-t border-white/8 my-1" />
                     <button onClick={handleSignOut} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-400 hover:bg-red-900/20 hover:text-red-300">
                       <LogOut size={15} /> Sign Out
@@ -88,6 +93,7 @@ export default function Navbar() {
             <>
               <NavLink to="/dashboard" className="block px-3 py-2 rounded-lg text-sm text-gray-300 hover:bg-white/5" onClick={() => setMobileOpen(false)}>Dashboard</NavLink>
               {isCreator && <NavLink to="/creator/dashboard" className="block px-3 py-2 rounded-lg text-sm text-gray-300 hover:bg-white/5" onClick={() => setMobileOpen(false)}>Creator Studio</NavLink>}
+              {isAdmin && <NavLink to="/admin" className="block px-3 py-2 rounded-lg text-sm text-purple-400 hover:bg-purple-900/20" onClick={() => setMobileOpen(false)}>Admin Studio</NavLink>}
               <button onClick={handleSignOut} className="block w-full text-left px-3 py-2 rounded-lg text-sm text-red-400 hover:bg-red-900/20">Sign Out</button>
             </>
           ) : (

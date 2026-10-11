@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Star, Heart, Play, ArrowLeft, User, BarChart2, Zap } from 'lucide-react'
+import { Star, Heart, Play, ArrowLeft, User, BarChart2, Zap, Loader2, Flag, X } from 'lucide-react'
 import apiClient from '../services/apiClient'
 import { useAuth } from '../contexts/AuthContext'
 import Badge from '../components/common/Badge'
@@ -23,6 +23,9 @@ export default function ToolDetail() {
   const { isAuthenticated } = useAuth()
   const queryClient = useQueryClient()
   const [runnerOpen, setRunnerOpen] = useState(false)
+  const [reportModalOpen, setReportModalOpen] = useState(false)
+  const [reportReason, setReportReason] = useState('Inappropriate or harmful content')
+  const [reportDetails, setReportDetails] = useState('')
 
   const { data: tool, isLoading, isError } = useQuery({
     queryKey: ['tool', slug],
@@ -30,9 +33,35 @@ export default function ToolDetail() {
   })
 
   const favMutation = useMutation({
-    mutationFn: (toolId) => apiClient.post(`/api/favorites/${toolId}`),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['tool', slug] }),
-    onError: (err) => toast.error(err.message),
+    mutationFn: () => {
+      if (tool.is_favorited) {
+        return apiClient.delete(`/api/favorites/${tool.id}`).then(r => r.data)
+      } else {
+        return apiClient.post(`/api/favorites/${tool.id}`).then(r => r.data)
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tool', slug] })
+      queryClient.invalidateQueries({ queryKey: ['favorites'] })
+      queryClient.invalidateQueries({ queryKey: ['tools'] })
+      toast.success(tool.is_favorited ? 'Removed from favorites' : 'Saved to favorites')
+    },
+    onError: (err) => toast.error(err.message || 'Failed to update favorite'),
+  })
+
+  const reportMutation = useMutation({
+    mutationFn: () => apiClient.post(`/api/tools/${tool.id}/report`, {
+      reason: reportReason,
+      details: reportDetails,
+    }),
+    onSuccess: () => {
+      toast.success('Thank you. Your report has been submitted to moderators.')
+      setReportModalOpen(false)
+      setReportDetails('')
+    },
+    onError: (err) => {
+      toast.error(err.message || 'Failed to submit report')
+    },
   })
 
   if (isLoading) return <div className="flex justify-center py-24"><LoadingSpinner size="lg" /></div>
@@ -60,7 +89,14 @@ export default function ToolDetail() {
                 : <Zap size={28} className="text-brand-400" />}
             </div>
             <div className="flex-1 min-w-0">
-              <h1 className="text-2xl font-bold text-white">{tool.name}</h1>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-2xl font-bold text-white">{tool.name}</h1>
+                {tool.is_featured && (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow">
+                    <Star size={11} className="fill-white" /> Featured
+                  </span>
+                )}
+              </div>
               <div className="flex flex-wrap items-center gap-2 mt-2">
                 <Badge variant={tool.pricing_type === 'free' ? 'free' : 'paid'}>{pricingLabel}</Badge>
                 <span className="text-xs text-gray-500">
@@ -137,14 +173,27 @@ export default function ToolDetail() {
             )}
 
             {isAuthenticated && !runnerOpen && (
-              <button
-                onClick={() => favMutation.mutate(tool.id)}
-                className="btn-secondary w-full"
-                disabled={favMutation.isPending}
-              >
-                <Heart size={16} className={tool.is_favorited ? 'fill-red-400 text-red-400' : ''} />
-                {tool.is_favorited ? 'Unfavorite' : 'Save Tool'}
-              </button>
+              <div className="space-y-2">
+                <button
+                  onClick={() => favMutation.mutate()}
+                  className="btn-secondary w-full"
+                  disabled={favMutation.isPending}
+                >
+                  {favMutation.isPending ? (
+                    <Loader2 size={16} className="animate-spin" />
+                  ) : (
+                    <Heart size={16} className={tool.is_favorited ? 'fill-red-400 text-red-400' : ''} />
+                  )}
+                  {tool.is_favorited ? 'Saved in Favorites' : 'Add to Favorites'}
+                </button>
+
+                <button
+                  onClick={() => setReportModalOpen(true)}
+                  className="w-full py-1 px-3 text-xs text-gray-500 hover:text-red-400 flex items-center justify-center gap-1.5 transition-colors"
+                >
+                  <Flag size={12} /> Report Tool
+                </button>
+              </div>
             )}
 
             <div className="border-t border-white/8 pt-4 space-y-2.5 text-xs text-gray-500">
@@ -168,6 +217,67 @@ export default function ToolDetail() {
           </div>
         </div>
       </div>
+
+      {/* Report Modal */}
+      {reportModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <div className="card max-w-md w-full p-6 space-y-4 border-white/10 shadow-2xl">
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-bold text-white flex items-center gap-2">
+                <Flag size={16} className="text-red-400" /> Report Tool
+              </h3>
+              <button onClick={() => setReportModalOpen(false)} className="text-gray-500 hover:text-gray-300">
+                <X size={18} />
+              </button>
+            </div>
+            <p className="text-xs text-gray-400">
+              Reporting <strong className="text-white">{tool.name}</strong>. Help us keep ToolForge safe and trustworthy.
+            </p>
+            <div>
+              <label className="label text-xs">Reason *</label>
+              <select
+                value={reportReason}
+                onChange={e => setReportReason(e.target.value)}
+                className="input text-xs bg-surface-800"
+              >
+                <option value="Inappropriate or harmful content">Inappropriate or harmful content</option>
+                <option value="Broken or malfunctioning tool">Broken or malfunctioning tool</option>
+                <option value="Misleading or fraudulent description">Misleading or fraudulent description</option>
+                <option value="Copyright or IP infringement">Copyright or IP infringement</option>
+                <option value="Spam or low quality">Spam or low quality</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div>
+              <label className="label text-xs">Additional Details (optional)</label>
+              <textarea
+                value={reportDetails}
+                onChange={e => setReportDetails(e.target.value)}
+                placeholder="Describe why you are reporting this tool..."
+                rows={3}
+                className="input text-xs resize-none"
+              />
+            </div>
+            <div className="flex gap-2 justify-end pt-2">
+              <button
+                type="button"
+                onClick={() => setReportModalOpen(false)}
+                className="btn-secondary py-1.5 px-3 text-xs"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => reportMutation.mutate()}
+                disabled={reportMutation.isPending}
+                className="btn-primary py-1.5 px-4 text-xs bg-red-600 hover:bg-red-500 text-white"
+              >
+                {reportMutation.isPending ? 'Submitting…' : 'Submit Report'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

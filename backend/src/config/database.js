@@ -8,7 +8,7 @@ export const pool = new Pool({
   ssl: { rejectUnauthorized: false }, // Supabase requires SSL; free tier cert may not match
   max: 5,                  // Low cap — Supabase transaction pooler multiplexes; large local pools waste quota
   idleTimeoutMillis: 10000, // Release idle connections after 10 s (before Supabase drops them at ~30 s)
-  connectionTimeoutMillis: 8000,
+  connectionTimeoutMillis: 30000,
 })
 
 pool.on('error', (err) => {

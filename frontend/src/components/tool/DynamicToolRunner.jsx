@@ -1,19 +1,32 @@
 import { useState } from 'react'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
-import { X, Loader2, Copy, CheckCheck } from 'lucide-react'
+import { X, Loader2, Copy, CheckCheck, Coins } from 'lucide-react'
 import apiClient from '../../services/apiClient'
 import toast from 'react-hot-toast'
 
 export default function DynamicToolRunner({ tool, onClose }) {
+  const queryClient = useQueryClient()
   const { register, handleSubmit, formState: { errors } } = useForm()
   const [output, setOutput] = useState(null)
   const [copied, setCopied] = useState(false)
   const schema = tool.input_schema ?? []
 
+  const isPaid = tool.pricing_type === 'credits' || tool.pricing_type === 'paid'
+  const cost = isPaid ? Math.max(Number(tool.credits_per_run) || 1, 1) : 0
+
   const runMutation = useMutation({
     mutationFn: (inputs) => apiClient.post(`/api/execute/${tool.id}`, { inputs }).then(r => r.data),
-    onSuccess: (data) => { setOutput(data.output); toast.success('Tool ran successfully!') },
+    onSuccess: (data) => {
+      setOutput(data.output)
+      queryClient.invalidateQueries({ queryKey: ['credits'] })
+      queryClient.invalidateQueries({ queryKey: ['run-history'] })
+      if (data.credits_charged > 0) {
+        toast.success(`Ran successfully! (${data.credits_charged} credits used)`)
+      } else {
+        toast.success('Tool ran successfully!')
+      }
+    },
     onError: (err) => toast.error(err.message || 'Execution failed'),
   })
 
@@ -89,7 +102,12 @@ export default function DynamicToolRunner({ tool, onClose }) {
               {errors[field.name] && <p className="text-xs text-red-400 mt-1">{errors[field.name].message}</p>}
             </div>
           ))}
-          {schema.length === 0 && <p className="text-xs text-gray-500">No configurable inputs. Click Run to execute.</p>}
+          {cost > 0 && (
+            <div className="flex items-center justify-between text-xs text-amber-300 bg-amber-950/30 border border-amber-900/40 px-3 py-2 rounded-lg">
+              <span className="flex items-center gap-1.5"><Coins size={13} className="text-amber-400" /> Cost per run:</span>
+              <span className="font-semibold">{cost} credits</span>
+            </div>
+          )}
           <button type="submit" className="btn-primary w-full" disabled={runMutation.isPending}>
             {runMutation.isPending ? <><Loader2 size={16} className="animate-spin" /> Running…</> : 'Run Tool'}
           </button>
