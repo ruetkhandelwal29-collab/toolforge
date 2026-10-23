@@ -15,6 +15,8 @@ import creatorRoutes from './routes/creators.js'
 import reviewRoutes from './routes/reviews.js'
 import creditRoutes from './routes/credits.js'
 import adminRoutes from './routes/admin.js'
+import workflowRoutes from './routes/workflows.js'
+import agentRoutes from './routes/agents.js'
 
 const app = express()
 app.use(helmet())
@@ -37,6 +39,8 @@ app.use('/api/users',      userRoutes)
 app.use('/api/creators',   creatorRoutes)
 app.use('/api/reviews',    reviewRoutes)
 app.use('/api/admin',      adminRoutes)
+app.use('/api/workflows',  workflowRoutes)
+app.use('/api/agents',     agentRoutes)
 app.use('/{*path}', (req, res) => res.status(404).json({ error: `Route ${req.method} ${req.originalUrl} not found` }))
 app.use(errorHandler)
 export default app

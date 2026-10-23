@@ -35,13 +35,18 @@ export async function query(text, params) {
     const isConnectionDrop =
       err.message?.includes('terminated') ||
       err.message?.includes('ECONNRESET') ||
-      err.code === 'ECONNRESET'
+      err.message?.includes('timeout') ||
+      err.code === 'ECONNRESET' ||
+      err.code === 'ENOTFOUND' ||
+      err.code === 'EAI_AGAIN' ||
+      err.code === '08006'
 
     if (isConnectionDrop) {
       // One automatic retry with a fresh pool connection
       if (env.NODE_ENV === 'development') {
-        console.warn('DB connection dropped — retrying query once…')
+        console.warn(`DB connection dropped (${err.code || err.message}) — retrying query in 500ms…`)
       }
+      await new Promise(r => setTimeout(r, 500))
       const res = await pool.query(text, params)
       const duration = Date.now() - start
       if (env.NODE_ENV === 'development') {

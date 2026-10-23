@@ -1,6 +1,6 @@
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
-import { Zap, Menu, X, LayoutDashboard, LogOut, User, ChevronDown, ShieldAlert } from 'lucide-react'
+import { Zap, Menu, X, LayoutDashboard, LogOut, User, ChevronDown, ShieldAlert, GitBranch } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
 import { clsx } from 'clsx'
 
@@ -39,6 +39,10 @@ export default function Navbar() {
             <NavLink to="/marketplace" className={({ isActive }) => clsx('btn-ghost text-sm', isActive && 'text-white bg-white/5')}>
               Marketplace
             </NavLink>
+            <NavLink to="/workflows" className={({ isActive }) => clsx('btn-ghost text-sm flex items-center gap-1.5', isActive && 'text-white bg-white/5')}>
+              <GitBranch size={14} />
+              Workflows
+            </NavLink>
           </nav>
 
           <div className="flex items-center gap-3">
@@ -67,6 +71,9 @@ export default function Navbar() {
                         <ShieldAlert size={15} /> Admin Studio
                       </Link>
                     )}
+                    <Link to="/workflows/history" className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-300 hover:bg-white/5 hover:text-white" onClick={() => setDropdownOpen(false)}>
+                      <GitBranch size={15} /> Workflow History
+                    </Link>
                     <div className="border-t border-white/8 my-1" />
                     <button onClick={handleSignOut} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-400 hover:bg-red-900/20 hover:text-red-300">
                       <LogOut size={15} /> Sign Out
@@ -89,6 +96,7 @@ export default function Navbar() {
       {mobileOpen && (
         <div className="md:hidden border-t border-white/8 bg-surface-900 px-4 py-3 space-y-1">
           <NavLink to="/marketplace" className="block px-3 py-2 rounded-lg text-sm text-gray-300 hover:bg-white/5" onClick={() => setMobileOpen(false)}>Marketplace</NavLink>
+          <NavLink to="/workflows" className="block px-3 py-2 rounded-lg text-sm text-gray-300 hover:bg-white/5" onClick={() => setMobileOpen(false)}>Workflows</NavLink>
           {isAuthenticated ? (
             <>
               <NavLink to="/dashboard" className="block px-3 py-2 rounded-lg text-sm text-gray-300 hover:bg-white/5" onClick={() => setMobileOpen(false)}>Dashboard</NavLink>

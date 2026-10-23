@@ -8,7 +8,12 @@ export async function requireAuth(req, res, next) {
   }
   const token = authHeader.split(' ')[1]
   try {
-    const { data: { user } = {}, error } = await supabaseAdmin.auth.getUser(token)
+    let authResult = await supabaseAdmin.auth.getUser(token)
+    if (authResult.error && (authResult.error.message?.includes('fetch failed') || authResult.error.message?.includes('network'))) {
+      await new Promise(r => setTimeout(r, 600))
+      authResult = await supabaseAdmin.auth.getUser(token)
+    }
+    const { data: { user } = {}, error } = authResult
     if (error || !user) {
       console.warn('Auth verification failed:', error?.message, error?.status)
       return res.status(401).json({ error: 'Invalid or expired token' })

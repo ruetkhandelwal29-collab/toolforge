@@ -13,6 +13,11 @@ import EditTool from './pages/EditTool'
 import UserDashboard from './pages/UserDashboard'
 import NotFound from './pages/NotFound'
 import AdminDashboard from './pages/AdminDashboard'
+import WorkflowLibrary from './pages/WorkflowLibrary'
+import WorkflowEditor from './pages/WorkflowEditor'
+import WorkflowRunner from './pages/WorkflowRunner'
+import WorkflowHistory from './pages/WorkflowHistory'
+import WorkflowRunDetail from './pages/WorkflowRunDetail'
 import ProtectedRoute from './components/auth/ProtectedRoute'
 import CreatorRoute from './components/auth/CreatorRoute'
 import AdminRoute from './components/auth/AdminRoute'
@@ -29,8 +34,15 @@ export default function App() {
             <Route path="/tools/:slug" element={<ToolDetail />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            {/* Workflow routes — library and runner are public-accessible */}
+            <Route path="/workflows" element={<WorkflowLibrary />} />
+            <Route path="/workflows/history" element={<WorkflowHistory />} />
+            <Route path="/workflows/runs/:runId" element={<WorkflowRunDetail />} />
+            <Route path="/workflows/:id/run" element={<WorkflowRunner />} />
             <Route element={<ProtectedRoute />}>
               <Route path="/dashboard" element={<UserDashboard />} />
+              <Route path="/workflows/new" element={<WorkflowEditor />} />
+              <Route path="/workflows/:id/edit" element={<WorkflowEditor />} />
             </Route>
             <Route element={<CreatorRoute />}>
               <Route path="/creator/dashboard" element={<CreatorDashboard />} />
